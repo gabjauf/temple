@@ -3,9 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const modulePath = path.dirname(fileURLToPath(import.meta.url))
+// const modulePath = path.dirname(fileURLToPath(import.meta.url))
 
-const grammarFile = path.resolve(modulePath, './filename-grammar.ohm')
+const grammarFile = path.resolve(__dirname, './filename-grammar.ohm')
 
 const contents = fs.readFileSync(grammarFile, 'utf-8');
 

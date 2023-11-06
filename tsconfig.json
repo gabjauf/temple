@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"module": "es2022",
-		"target": "es2022",
+		"module": "commonjs",
+		"target": "ES2021",
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
@@ -9,8 +9,8 @@
     "emitDecoratorMetadata": true,
 		"allowSyntheticDefaultImports": true,
 		"sourceMap": true,
-		"outDir": "lib"
+		"outDir": "dist"
 	},
-	"lib": ["es2022"],
-	"exclude": ["./templates", "./spikes"]
+	"lib": ["ES2021"],
+	"exclude": ["./templates", "./spikes", "./lib"]
 }

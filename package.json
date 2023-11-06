@@ -3,10 +3,12 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.ts",
-  "type": "module",
+  "bin": {
+    "temple": "dist/bin/cli.js"
+  },
   "scripts": {
     "start": "tsx index.ts",
-    "build": "tsc",
+    "build": "tsc && cp src/filename-grammar.ohm dist/src/filename-grammar.ohm",
     "test": "vitest"
   },
   "author": "",
@@ -20,7 +22,7 @@
     "commander": "^11.1.0",
     "eta": "^2.0.1",
     "glob": "^10.1.0",
-    "inquirer": "^9.1.5",
+    "inquirer": "^8.0.0",
     "json-schema-migrate": "^2.0.0",
     "ohm-js": "^17.1.0",
     "tsx": "^3.12.6",
@@ -28,5 +30,8 @@
   },
   "devDependencies": {
     "vitest": "^0.34.6"
+  },
+  "engines": {
+    "node": ">=16"
   }
 }

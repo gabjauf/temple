@@ -1,7 +1,7 @@
 import Ajv from 'ajv/dist/2019';
 import axios from 'axios';
 import addFormats from 'ajv-formats';
-import migrate from 'json-schema-migrate';
+import { draft2019 } from 'json-schema-migrate';
 import { default as addMetaSchema2020 } from 'ajv/dist/refs/json-schema-2020-12';
 import addFormats2019 from 'ajv-formats-draft2019';
 import draft7MetaSchema from 'ajv/dist/refs/json-schema-draft-07.json';
@@ -15,7 +15,7 @@ ajv.addMetaSchema(draft7MetaSchema);
 ajv.addMetaSchema(draft6MetaSchema);
 addFormats(ajv);
 addFormats2019(ajv);
-(addMetaSchema2020 as any).default.call(ajv);
+(addMetaSchema2020 as any).call(ajv);
 
 async function loadSchema(uri) {
   let { data, status } = await axios.get(uri);
@@ -24,7 +24,7 @@ async function loadSchema(uri) {
   console.log(uri);
   if (data.$schema === 'http://json-schema.org/draft-04/schema#') {
     console.time('alterSchema');
-    migrate.draft2019(data);
+    draft2019(data);
     console.timeEnd('alterSchema');
   }
 
