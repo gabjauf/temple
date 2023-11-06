@@ -1,0 +1,7 @@
+`
+function hey() {
+  ${console.log(process) || ''}
+  let ${this.prop1} = "dzda"
+  ${['A', 'N', 'D'].map((el, index) => `let ${el} = ${index}\n`).join('\n  ')}
+}
+`

@@ -1,0 +1,16 @@
+{
+  "schema": {
+    "required": "name",
+    "properties": {
+      "name": {
+        "type": "string"
+      }
+    }
+  },
+  "prompt": [
+    {
+      "name": "name",
+      "message": "What is the name of your project?"
+    }
+  ]
+}

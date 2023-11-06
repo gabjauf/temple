@@ -1,0 +1,9 @@
+  Filenames {
+    Exp = TableExp | PropertyExp | table | property
+     
+    TableExp = Exp table
+    
+    PropertyExp = Exp "." property
+    table = "[" property "]"
+    property = (letter | digit | "-" | "_")+
+  }

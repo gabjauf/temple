@@ -1,0 +1,6 @@
+filename {
+  Start = ListOf<Element, ".">
+  Element = table | property
+  table = "[" property "]"
+  property = (letter | digit | "-" | "_")+
+}

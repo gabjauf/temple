@@ -1,0 +1,11 @@
+export function <%= it.data.operationId %>(app: any, handler: (request, reply) => any) {
+  app.route({
+    // <%~ JSON.stringify(it.data) %>
+
+    method: '<%= it.method.toUpperCase() %>',
+    url: '<%= it.url %>',
+    handler: handler || function (request, reply) {
+      reply.send('hello world from auth.fastify.io')
+    }
+  })
+}

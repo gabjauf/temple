@@ -1,0 +1,31 @@
+{
+  "name": "temple",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "tsx index.ts",
+    "test": "vitest"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^18.15.11",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "ajv-formats-draft2019": "^1.6.1",
+    "axios": "^1.5.1",
+    "commander": "^11.1.0",
+    "eta": "^2.0.1",
+    "glob": "^10.1.0",
+    "inquirer": "^9.1.5",
+    "json-schema-migrate": "^2.0.0",
+    "ohm-js": "^17.1.0",
+    "tsx": "^3.12.6",
+    "typescript": "^5.0.4"
+  },
+  "devDependencies": {
+    "vitest": "^0.34.6"
+  }
+}

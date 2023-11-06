@@ -1,0 +1,45 @@
+{
+  "schema": {
+    "required": [
+      "vegetables"
+    ],
+    "type": "object",
+    "properties": {
+      "vegetables": {
+        "type": "array",
+        "minLength": 1,
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "zucchinis",
+                "carrots",
+                "potatoes"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "prompt": [
+    {
+      "name": "vegetables",
+      "type": "checkbox",
+      "message": "Which veggies do you want ?",
+      "choices": [
+        {
+          "name": "zucchinis"
+        },
+        {
+          "name": "carrots"
+        },
+        {
+          "name": "potatoes"
+        }
+      ]
+    }
+  ]
+}

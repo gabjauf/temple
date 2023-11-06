@@ -1,0 +1,7 @@
+// OPENAPI VERSION <%~ it.global.openapi %>
+
+<% Object.entries(it.global.paths).forEach(function([url, value]) { %>
+<% Object.entries(value).forEach(function([method, data]) { %>
+<%~ include("function", { method: method, data: data, url: url}) %>
+<% }) %>
+<% }) %>
