@@ -4,8 +4,8 @@ import { glob, Glob } from 'glob';
 import fs from 'fs/promises';
 import fsSync from 'fs';
 import inquirer from 'inquirer';
-import { splitFileExtension } from './util';
-import openApiSpec from './out.json';
+import { splitFileExtension } from '../src/util';
+import openApiSpec from '../out.json';
 
 const output = 'out';
 const templateBase = 'templates';

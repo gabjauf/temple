@@ -1,14 +1,20 @@
 import {grammar} from 'ohm-js';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const contents = fs.readFileSync('filename-grammar.ohm', 'utf-8');
+const modulePath = path.dirname(fileURLToPath(import.meta.url))
+
+const grammarFile = path.resolve(modulePath, './filename-grammar.ohm')
+
+const contents = fs.readFileSync(grammarFile, 'utf-8');
 
 export const filenameGrammar = grammar(contents);
 
 export const filenameSemantics = filenameGrammar.createSemantics()
 
 filenameSemantics.addOperation('toList()', {
-  Start(list) {
+  Start(list): any {
     return list.asIteration().children.map(c => c.toList());
   },
   property(l) {

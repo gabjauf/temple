@@ -15,7 +15,7 @@ ajv.addMetaSchema(draft7MetaSchema);
 ajv.addMetaSchema(draft6MetaSchema);
 addFormats(ajv);
 addFormats2019(ajv);
-addMetaSchema2020.default.call(ajv);
+(addMetaSchema2020 as any).default.call(ajv);
 
 async function loadSchema(uri) {
   let { data, status } = await axios.get(uri);

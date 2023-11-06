@@ -4,15 +4,12 @@ import { glob, Glob } from 'glob';
 import fs from 'fs/promises';
 import fsSync from 'fs';
 import inquirer from 'inquirer';
-import { splitFileExtension } from './util';
-import openApiSpec from './out.json';
 import { program } from 'commander';
-import ajv from './json-schema-validator';
-import { filenameGrammar, filenameSemantics } from './filename-matcher';
-import { generateFilenameCases } from './generateFilenameCases';
+import ajv from '../src/json-schema-validator';
+import { filenameGrammar, filenameSemantics } from '../src/filename-matcher';
+import { generateFilenameCases } from '../src/generateFilenameCases';
 
-const templateBase = 'templates';
-const input = 'templates/hello-world';
+const templateBase = '../templates';
 
 program.requiredOption('-t, --template <file>').requiredOption('-o, --output <path>').option('--values <json>');
 
