@@ -22,10 +22,12 @@ import { generateFilenameCases } from '../src/generateFilenameCases';
 
   const config = JSON.parse(fsSync.readFileSync(`${options.template}/config.json`).toString());
 
-  const settings =
-    (options.values && fsSync.existsSync(options.values)
+  const settings = options.values
+    ? fsSync.existsSync(options.values)
       ? JSON.parse(fsSync.readFileSync(options.values).toString())
-      : JSON.parse(options.value)) || (await inquirer.prompt(config.prompt));
+      : JSON.parse(options.values)
+    : await inquirer.prompt(config.prompt);
+
   console.log(options, settings);
 
   const validate = await ajv.compileAsync(config.schema);
