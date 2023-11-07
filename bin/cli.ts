@@ -10,6 +10,10 @@ import { program } from 'commander';
 import ajv from '../src/json-schema-validator';
 import { filenameGrammar, filenameSemantics } from '../src/filename-matcher';
 import { generateFilenameCases } from '../src/generateFilenameCases';
+import { Path } from 'typescript';
+import { extractComponentsFiles, extractTemplateFiles } from '../src/loader';
+
+const FILENAME_TEMPLATE_MARKER = '$$';
 
 (async () => {
   const templateBase = '../templates';
@@ -26,7 +30,7 @@ import { generateFilenameCases } from '../src/generateFilenameCases';
     ? fsSync.existsSync(options.values)
       ? JSON.parse(fsSync.readFileSync(options.values).toString())
       : JSON.parse(options.values)
-    : await inquirer.prompt(config.prompt);
+    : config.prompt && (await inquirer.prompt(config.prompt));
 
   console.log(options, settings);
 
@@ -47,9 +51,8 @@ import { generateFilenameCases } from '../src/generateFilenameCases';
   });
 
   await fs.mkdir(options.output, { recursive: true });
-  const components = new Glob(`${options.template}/components/**/*`, { withFileTypes: true });
-
-  components.stream().on('data', (found) => {
+  const components = extractComponentsFiles(options.template);
+  components.forEach((found) => {
     if (found.isDirectory()) {
       return;
     }
@@ -57,57 +60,77 @@ import { generateFilenameCases } from '../src/generateFilenameCases';
     Eta.templates.define(name, Eta.compile(fsSync.readFileSync(found.fullpath()).toString()));
   });
 
-  const g3 = new Glob(`${options.template}/template/**/*`, { withFileTypes: true });
-  const FILENAME_TEMPLATE_MARKER = '$$';
-  g3.stream().on('data', (found) => {
-    const fullPath = found.fullpath();
-    if (found.isDirectory()) {
-      return fsSync.mkdirSync(path.join(options.output, getOutputPath(fullPath)), { recursive: true });
+  const templateFiles = extractTemplateFiles(options.template);
+
+  const toGenerate = templateFiles.flatMap((found) => {
+    return setupFileGeneration(found);
+  });
+
+  type FileGenerationSetup = {
+    type: 'file' | 'dir';
+    fullPath: Path;
+    newName?: string;
+    data?: {
+      item?: any;
+      global: any;
+    };
+  };
+
+  function setupFileGeneration(file): FileGenerationSetup | FileGenerationSetup[] {
+    const fullPath = file.fullpath();
+    if (file.isDirectory()) {
+      return {
+        type: 'dir',
+        fullPath,
+      };
     }
 
     let { name } = path.parse(fullPath);
     if (isFileNameTemplated(name)) {
-      const expression = name.substring(
-        name.indexOf(FILENAME_TEMPLATE_MARKER) + FILENAME_TEMPLATE_MARKER.length,
-        name.lastIndexOf(FILENAME_TEMPLATE_MARKER)
-      );
+      const expression = extractTemplateExpressionFromFileName(name);
       const match = filenameGrammar.match(expression);
       if (match.failed()) {
         throw new Error(`Error while parsing templated name for file ${name}`);
       }
       const propList = filenameSemantics(match).toList();
-      let nameList = generateFilenameCases(propList, settings);
-      console.log(nameList);
-      nameList.forEach(({ newName, data }) => {
-        if (typeof data === 'string') {
-          const fileName = name.replace(
-            `${FILENAME_TEMPLATE_MARKER}${expression}${FILENAME_TEMPLATE_MARKER}`,
-            newName as string
-          );
-          return generateFile(fullPath, fileName, { item: data, global: settings });
-        } else {
-          const fileName = name.replace(
-            `${FILENAME_TEMPLATE_MARKER}${expression}${FILENAME_TEMPLATE_MARKER}`,
-            newName as string
-          );
-          return generateFile(fullPath, fileName, { item: data, global: settings });
-        }
+      const nameList = generateFilenameCases(propList, settings);
+      return nameList.map(({ newName, data }) => {
+        const fileName = getNewFileName(name, expression, newName);
+        return {
+          type: 'file',
+          fullPath,
+          newName: fileName,
+          data: { item: data, global: settings },
+        };
       });
     } else {
-      generateFile(fullPath, undefined, { global: settings });
+      return {
+        type: 'file',
+        fullPath,
+        data: { global: settings },
+      };
     }
-  });
+  }
 
-  function generateFile(fullPath: string, targetName?: string, data?: any): void {
+  Promise.all(
+    toGenerate.map(async (fileToGenerate) => {
+      await generateFile(fileToGenerate);
+    })
+  );
+
+  async function generateFile({ fullPath, newName, data, type }: FileGenerationSetup): Promise<void> {
     let { ext, name, dir } = path.parse(fullPath);
-    if (isTemplateFile(ext)) {
+    if (type === 'dir') {
+      await fs.mkdir(path.join(options.output, getOutputPath(fullPath)), { recursive: true });
+    } else if (isTemplateFile(ext)) {
       const file = fsSync.readFileSync(fullPath);
-      return fsSync.writeFileSync(
-        path.join(options.output, getOutputPath(dir), targetName || name),
+      await fs.writeFile(
+        path.join(options.output, getOutputPath(dir), newName || name),
         Eta.render(file.toString(), data || settings)
       );
+    } else {
+      await fs.cp(fullPath, path.join(options.output, getOutputPath(fullPath)));
     }
-    return fsSync.cpSync(fullPath, path.join(options.output, getOutputPath(fullPath)));
   }
 
   function isFileNameTemplated(name: string) {
@@ -125,3 +148,14 @@ import { generateFilenameCases } from '../src/generateFilenameCases';
     return fullPath.replace(`${options.template}/template`, '');
   }
 })();
+
+function getNewFileName(name: string, expression: string, newName: any) {
+  return name.replace(`${FILENAME_TEMPLATE_MARKER}${expression}${FILENAME_TEMPLATE_MARKER}`, newName as string);
+}
+
+function extractTemplateExpressionFromFileName(name: string) {
+  return name.substring(
+    name.indexOf(FILENAME_TEMPLATE_MARKER) + FILENAME_TEMPLATE_MARKER.length,
+    name.lastIndexOf(FILENAME_TEMPLATE_MARKER)
+  );
+}

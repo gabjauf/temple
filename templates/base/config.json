@@ -1,0 +1,17 @@
+{
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "method": {
+        "type": "string"
+      }
+    }
+  },
+  "default": {
+    "name": "ajziod",
+    "method": "GET"
+  }
+}

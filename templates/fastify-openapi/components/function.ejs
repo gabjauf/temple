@@ -4,6 +4,9 @@ export function <%= it.data.operationId %>(app: any, handler: (request, reply) =
 
     method: '<%= it.method.toUpperCase() %>',
     url: '<%= it.url %>',
+    schema: {
+      response: <%~ JSON.stringify(it.data.responses) %>
+    },
     handler: handler || function (request, reply) {
       reply.send('hello world from auth.fastify.io')
     }
