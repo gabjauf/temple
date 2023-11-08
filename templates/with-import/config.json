@@ -1,4 +1,7 @@
 {
+  "schema": {
+
+  },
   "imports": {
     "hello-world": "../hello-world"
   }

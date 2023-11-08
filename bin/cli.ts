@@ -15,6 +15,17 @@ import { extractComponentsFiles, extractTemplateFiles } from '../src/loader';
 
 const FILENAME_TEMPLATE_MARKER = '$$';
 
+type FileGenerationSetup = {
+  type: 'file' | 'dir';
+  fullPath: string;
+  outputPath: string;
+  newName?: string;
+  data?: {
+    item?: any;
+    global: any;
+  };
+};
+
 (async () => {
   const templateBase = '../templates';
 
@@ -43,14 +54,11 @@ const FILENAME_TEMPLATE_MARKER = '$$';
   }
 
   options.output = path.resolve(options.output);
-  options.template = path.resolve(options.template);
-
-  Eta.configure({
-    views: path.resolve(templateBase),
-    root: options.template,
-  });
+  options.template = path.relative(process.cwd(), path.resolve(options.template));
 
   await fs.mkdir(options.output, { recursive: true });
+
+
   const components = extractComponentsFiles(options.template);
   components.forEach((found) => {
     if (found.isDirectory()) {
@@ -62,30 +70,40 @@ const FILENAME_TEMPLATE_MARKER = '$$';
 
   const templateFiles = extractTemplateFiles(options.template);
 
-  const toGenerate = templateFiles.flatMap((found) => {
-    return setupFileGeneration(found);
-  });
+  // const imports = config.imports && Object.keys(config.imports).reduce((res, key) => {
+  //   res[key] = 
+  // }, {})
 
-  type FileGenerationSetup = {
-    type: 'file' | 'dir';
-    fullPath: Path;
-    newName?: string;
-    data?: {
-      item?: any;
-      global: any;
-    };
-  };
+  const toGenerate = await Promise.all(templateFiles.flatMap(async(found) => {
+    const fullPath = found.fullpath();
+    const type = found.isDirectory() ? 'dir' : 'file';
+    const {name, ext} = path.parse(fullPath);
+    if (`${name}${ext}` === 'imports.temple.json') {
+      const imports = JSON.parse((await fs.readFile(fullPath)).toString());
+      return setupFileGeneration(found);
+    } else {
+      const data = {
+        type,
+        fullPath,
+        content: type === 'file' ? (await fs.readFile(fullPath)).toString() : null
+      };
+      return setupFileGeneration(found);
+    }
+  }));
+
+  console.log(toGenerate)
 
   function setupFileGeneration(file): FileGenerationSetup | FileGenerationSetup[] {
-    const fullPath = file.fullpath();
+    const fullPath = file.relative();
     if (file.isDirectory()) {
       return {
         type: 'dir',
         fullPath,
+        outputPath: getOutputPath(fullPath, options.template)
       };
     }
 
-    let { name } = path.parse(fullPath);
+    let { name, dir } = path.parse(fullPath);
     if (isFileNameTemplated(name)) {
       const expression = extractTemplateExpressionFromFileName(name);
       const match = filenameGrammar.match(expression);
@@ -100,6 +118,7 @@ const FILENAME_TEMPLATE_MARKER = '$$';
           type: 'file',
           fullPath,
           newName: fileName,
+          outputPath: getOutputPath(dir, options.template),
           data: { item: data, global: settings },
         };
       });
@@ -107,31 +126,13 @@ const FILENAME_TEMPLATE_MARKER = '$$';
       return {
         type: 'file',
         fullPath,
+        outputPath: getOutputPath(fullPath, options.template),
         data: { global: settings },
       };
     }
   }
 
-  Promise.all(
-    toGenerate.map(async (fileToGenerate) => {
-      await generateFile(fileToGenerate);
-    })
-  );
-
-  async function generateFile({ fullPath, newName, data, type }: FileGenerationSetup): Promise<void> {
-    let { ext, name, dir } = path.parse(fullPath);
-    if (type === 'dir') {
-      await fs.mkdir(path.join(options.output, getOutputPath(fullPath)), { recursive: true });
-    } else if (isTemplateFile(ext)) {
-      const file = fsSync.readFileSync(fullPath);
-      await fs.writeFile(
-        path.join(options.output, getOutputPath(dir), newName || name),
-        Eta.render(file.toString(), data || settings)
-      );
-    } else {
-      await fs.cp(fullPath, path.join(options.output, getOutputPath(fullPath)));
-    }
-  }
+  await writeTemplatedFiles(toGenerate, options.output);
 
   function isFileNameTemplated(name: string) {
     return (
@@ -139,15 +140,38 @@ const FILENAME_TEMPLATE_MARKER = '$$';
       name.indexOf(FILENAME_TEMPLATE_MARKER) !== name.lastIndexOf(FILENAME_TEMPLATE_MARKER)
     );
   }
-
-  function isTemplateFile(ext: string) {
-    return ext === '.ejs';
-  }
-
-  function getOutputPath(fullPath: string): string {
-    return fullPath.replace(`${options.template}/template`, '');
-  }
 })();
+
+async function writeTemplatedFiles(toGenerate: FileGenerationSetup[], output: Path) {
+  await Promise.all(
+    toGenerate.map(async (fileToGenerate) => {
+      await generateFile(fileToGenerate, output);
+    })
+  );
+}
+
+async function generateFile({ fullPath, newName, data, type, outputPath }: FileGenerationSetup, output: Path): Promise<void> {
+  let { ext, name, dir } = path.parse(outputPath);
+  if (type === 'dir') {
+    await fs.mkdir(path.join(output, outputPath), { recursive: true });
+  } else if (isTemplateFile(ext)) {
+    const file = fsSync.readFileSync(fullPath);
+    await fs.writeFile(
+      path.join(output, dir, newName || name),
+      Eta.render(file.toString(), data)
+    );
+  } else {
+    await fs.cp(fullPath, path.join(output, outputPath));
+  }
+}
+
+function isTemplateFile(ext: string) {
+  return ext === '.ejs';
+}
+
+function getOutputPath(fullPath: string, templatePath: string): string {
+  return fullPath.replace(`${templatePath}/template`, '');
+}
 
 function getNewFileName(name: string, expression: string, newName: any) {
   return name.replace(`${FILENAME_TEMPLATE_MARKER}${expression}${FILENAME_TEMPLATE_MARKER}`, newName as string);
