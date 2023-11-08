@@ -23,8 +23,8 @@ const extractComponentTestCases = [
 
 describe('extractComponentsFiles', () => {
   extractComponentTestCases.map(({ templatePath, expectedComponentLength }) => {
-    test(templatePath, () => {
-      const res = extractComponentsFiles(templatePath as Path);
+    test(templatePath, async () => {
+      const res = await extractComponentsFiles(templatePath as Path);
       expect(res).toHaveLength(expectedComponentLength);
     });
   });
@@ -32,8 +32,8 @@ describe('extractComponentsFiles', () => {
 
 describe('extractTemplateFiles', () => {
   extractComponentTestCases.map(({ templatePath, expectedTemplateLength }) => {
-    test(templatePath, () => {
-      const res = extractTemplateFiles(templatePath as Path);
+    test(templatePath, async () => {
+      const res = await extractTemplateFiles(templatePath as Path);
       expect(res).toHaveLength(expectedTemplateLength);
     });
   });
