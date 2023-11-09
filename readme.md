@@ -1,4 +1,4 @@
-# Temple
+# ⛪ Temple
 
 Experimenting with templating for code generation
 - Composability: import other template modules, either a directory or a remote archive
@@ -10,7 +10,7 @@ Experimenting with templating for code generation
 To confirm
 - Safe: validation upfront and safe code (javascript) execution
 
-## Security warning
+## ⚠️ Security warning
 
 Current version is unstable and you should consider the following:
 - Security was not tested yet, so do not use with uncontrolled templates
