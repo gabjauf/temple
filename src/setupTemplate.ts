@@ -7,8 +7,6 @@ import { Path } from 'typescript';
 import { extractComponentsFiles, extractTemplateFiles, TemplateFile } from './loader';
 import * as helpers from './helpers';
 
-helpers.yo = () => console.log('yo');
-
 export const FILENAME_TEMPLATE_MARKER = '$$';
 
 export type FileGenerationSetup = {
@@ -19,6 +17,7 @@ export type FileGenerationSetup = {
   data?: {
     item?: any;
     global: any;
+    helpers: any;
   };
 };
 
