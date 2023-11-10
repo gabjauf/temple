@@ -12,7 +12,6 @@ import { Path } from 'typescript';
 import { FileGenerationSetup, setupTemplate } from '../src/setupTemplate';
 
 (async () => {
-
   program.requiredOption('-t, --template <file>').requiredOption('-o, --output <path>').option('--values <json>');
 
   program.parse();
@@ -38,7 +37,7 @@ import { FileGenerationSetup, setupTemplate } from '../src/setupTemplate';
   }
 
   options.output = path.resolve(options.output);
-  options.template = path.relative(process.cwd(), path.resolve(options.template));
+  options.template = options.template;
 
   await fs.mkdir(options.output, { recursive: true });
 
@@ -46,7 +45,6 @@ import { FileGenerationSetup, setupTemplate } from '../src/setupTemplate';
   console.log(toGenerate);
 
   await writeTemplatedFiles(toGenerate, options.output);
-
 })();
 
 async function writeTemplatedFiles(toGenerate: FileGenerationSetup[], output: Path) {
@@ -65,7 +63,7 @@ async function generateFile(
   if (type === 'dir') {
     await fs.mkdir(path.join(output, outputPath), { recursive: true });
   } else if (isTemplateFile(ext)) {
-    await fs.writeFile(path.join(output, dir, newName || name), Eta.render(content, data));
+    await fs.writeFile(path.join(output, dir, newName || name), await Eta.render(content, data, { async: true }));
   } else {
     await fs.writeFile(path.join(output, outputPath), content);
   }

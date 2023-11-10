@@ -1,0 +1,17 @@
+{
+  "schema": {
+    "required": ["name"],
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      }
+    }
+  },
+  "prompt": [
+    {
+      "name": "name",
+      "message": "What is your name?"
+    }
+  ]
+}

@@ -5,6 +5,9 @@ import { filenameGrammar, filenameSemantics } from './filename-matcher';
 import { generateFilenameCases } from './generateFilenameCases';
 import { Path } from 'typescript';
 import { extractComponentsFiles, extractTemplateFiles, TemplateFile } from './loader';
+import * as helpers from './helpers';
+
+helpers.yo = () => console.log('yo');
 
 export const FILENAME_TEMPLATE_MARKER = '$$';
 
@@ -92,7 +95,7 @@ export function setupFileGeneration(
         content: file.content,
         newName: fileName,
         outputPath: file.templateRootRelativePath,
-        data: { item: data, global: data },
+        data: { item: data, global: data, helpers },
       };
     });
   } else {
@@ -100,7 +103,7 @@ export function setupFileGeneration(
       type: 'file',
       content: file.content,
       outputPath: file.templateRootRelativePath,
-      data: { global: data },
+      data: { global: data, helpers },
     };
   }
 }
