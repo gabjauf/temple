@@ -4,23 +4,23 @@ import fs from 'fs/promises';
 import { filenameGrammar, filenameSemantics } from './filename-matcher';
 import { generateFilenameCases } from './generateFilenameCases';
 import { Path } from 'typescript';
-import { extractComponentsFiles, extractTemplateFiles } from './loader';
+import { extractComponentsFiles, extractTemplateFiles, TemplateFile } from './loader';
 
 export const FILENAME_TEMPLATE_MARKER = '$$';
 
 export type FileGenerationSetup = {
   type: 'file' | 'dir';
-  fullPath: string;
   outputPath: string;
   newName?: string;
+  content?: string;
   data?: {
     item?: any;
     global: any;
   };
 };
 
-export async function setupTemplate(templatePath: Path, data: any, config) {
-  console.log('CALL SETUP TEMPLATE', templatePath, data, config)
+export async function setupTemplate(templatePath: Path, data: any, root = process.cwd()) {
+  const config = JSON.parse((await fs.readFile(`${templatePath}/config.json`)).toString());
   const components = await extractComponentsFiles(templatePath);
   components.forEach((found) => {
     if (found.type === 'dir') {
@@ -32,39 +32,47 @@ export async function setupTemplate(templatePath: Path, data: any, config) {
 
   const templateFiles = await extractTemplateFiles(templatePath);
 
-  const imports = config.imports && Object.keys(config.imports).reduce((res, key) => {
-    res[key] = config.imports[key];
-    return res;
-  }, {})
+  const imports =
+    config.imports &&
+    Object.keys(config.imports).reduce((res, key) => {
+      res[key] = config.imports[key];
+      return res;
+    }, {});
 
   const toGenerate = await Promise.all(
     templateFiles.flatMap(async (found) => {
       const { name, ext, dir } = path.parse(found.fullPath);
       if (`${name}${ext}` === 'imports.temple.json') {
-        console.log("IMPORTS", imports);
+        // console.log("IMPORTS", imports);
         const localImports = JSON.parse((await fs.readFile(found.fullPath)).toString());
-        const importsTemplatePath = path.relative(process.cwd(), path.resolve(path.join(templatePath, imports[localImports.source])));
-        console.log("LOCAL", localImports, importsTemplatePath)
-        const localConfig = JSON.parse((await fs.readFile(`${importsTemplatePath}/config.json`)).toString());
-        return setupTemplate(importsTemplatePath as Path, data, localConfig);
-        // return setupFileGeneration(found, templatePath, data);
+        const importsTemplatePath = path.relative(
+          root,
+          path.resolve(path.join(templatePath, imports[localImports.source]))
+        );
+        const out = await setupTemplate(importsTemplatePath as Path, data, importsTemplatePath);
+        return out.map((file) => ({
+          ...file,
+          outputPath: path.join(path.relative(`${templatePath}/template`, dir), file.outputPath),
+        }));
       } else {
         return setupFileGeneration(found, templatePath, data);
       }
     })
   );
 
-  console.log(toGenerate);
-
   return toGenerate.flat();
 }
 
-export function setupFileGeneration(file, templatePath: Path, data: any): FileGenerationSetup | FileGenerationSetup[] {
+export function setupFileGeneration(
+  file: TemplateFile,
+  templatePath: Path,
+  data: any
+): FileGenerationSetup | FileGenerationSetup[] {
   const fullPath = file.relativePath;
   if (file.type === 'dir') {
     return {
       ...file,
-      outputPath: getOutputPath(fullPath, templatePath),
+      outputPath: file.templateRootRelativePath,
     };
   }
 
@@ -81,17 +89,17 @@ export function setupFileGeneration(file, templatePath: Path, data: any): FileGe
       const fileName = getNewFileName(name, expression, newName);
       return {
         type: 'file',
-        fullPath,
+        content: file.content,
         newName: fileName,
-        outputPath: getOutputPath(dir, templatePath),
+        outputPath: file.templateRootRelativePath,
         data: { item: data, global: data },
       };
     });
   } else {
     return {
       type: 'file',
-      fullPath,
-      outputPath: getOutputPath(fullPath, templatePath),
+      content: file.content,
+      outputPath: file.templateRootRelativePath,
       data: { global: data },
     };
   }

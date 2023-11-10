@@ -19,6 +19,11 @@ const extractComponentTestCases = [
     expectedComponentLength: 0,
     expectedTemplateLength: 9
   },
+  {
+    templatePath: __dirname + '/../templates/with-import',
+    expectedComponentLength: 0,
+    expectedTemplateLength: 3
+  },
 ];
 
 describe('extractComponentsFiles', () => {
@@ -34,6 +39,7 @@ describe('extractTemplateFiles', () => {
   extractComponentTestCases.map(({ templatePath, expectedTemplateLength }) => {
     test(templatePath, async () => {
       const res = await extractTemplateFiles(templatePath as Path);
+      console.log(res);
       expect(res).toHaveLength(expectedTemplateLength);
     });
   });

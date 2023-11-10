@@ -42,7 +42,8 @@ import { FileGenerationSetup, setupTemplate } from '../src/setupTemplate';
 
   await fs.mkdir(options.output, { recursive: true });
 
-  const toGenerate = await setupTemplate(options.template, settings, config);
+  const toGenerate = await setupTemplate(options.template, settings);
+  console.log(toGenerate);
 
   await writeTemplatedFiles(toGenerate, options.output);
 
@@ -57,17 +58,16 @@ async function writeTemplatedFiles(toGenerate: FileGenerationSetup[], output: Pa
 }
 
 async function generateFile(
-  { fullPath, newName, data, type, outputPath }: FileGenerationSetup,
+  { newName, data, type, outputPath, content }: FileGenerationSetup,
   output: Path
 ): Promise<void> {
   let { ext, name, dir } = path.parse(outputPath);
   if (type === 'dir') {
     await fs.mkdir(path.join(output, outputPath), { recursive: true });
   } else if (isTemplateFile(ext)) {
-    const file = fsSync.readFileSync(fullPath);
-    await fs.writeFile(path.join(output, dir, newName || name), Eta.render(file.toString(), data));
+    await fs.writeFile(path.join(output, dir, newName || name), Eta.render(content, data));
   } else {
-    await fs.cp(fullPath, path.join(output, outputPath));
+    await fs.writeFile(path.join(output, outputPath), content);
   }
 }
 
