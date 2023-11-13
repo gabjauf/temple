@@ -9,7 +9,8 @@
   "scripts": {
     "start": "tsx index.ts",
     "build": "tsc && cp src/filename-grammar.ohm dist/src/filename-grammar.ohm",
-    "test": "vitest"
+    "test": "vitest",
+    "test:ci": "vitest --run"
   },
   "author": "",
   "license": "MIT",
