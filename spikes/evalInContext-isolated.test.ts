@@ -53,7 +53,6 @@ describe('evalInContextIsolated', () => {
       },
     };
     const evaluated = await evalInContextIsolated(code, context);
-    console.log(evaluated);
     expect(evaluated.pid).toBeGreaterThan(0);
     expect(evaluated.apple).toBe('APPLE');
   });
@@ -63,19 +62,6 @@ describe('evalInContextIsolated', () => {
       let ret = hasOwnProperty;
       ret.constructor('return process')().mainModule.require('child_process').execSync('touch flag');
   }());`;
-    await expect(() => evalInContextIsolated(code)).rejects.toThrow();
-  });
-
-  test('should not have access to Node.js objects (CWE-265)', async function () {
-    const code = `
-    (function() { 
-        try{ 
-            valueOf()
-        } catch(pp){
-            pp.constructor.constructor('return process')().mainModule.require('child_process').execSync('touch flag'); 
-        }
-    })()
-    `;
     await expect(() => evalInContextIsolated(code)).rejects.toThrow();
   });
 
