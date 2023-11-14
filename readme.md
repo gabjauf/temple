@@ -16,6 +16,17 @@ Current version is unstable and you should consider the following:
 - Security was not tested yet, so do not use with uncontrolled templates
 - At the current stage of the project, it is not guaranteed that the safe javascript execution can be attained
 
+## Usage
+
+As of now, it is too early to put the tool on npm.
+To use it you need to
+
+- Clone this repo
+- `npm i`
+- `npm build`
+- `npm link`
+- Command should now be available as `temple`
+
 ## Ideal worklow
 
 Right now, what we mostly see is either:
@@ -35,7 +46,9 @@ An ideal workflow would be:
 ## Roadmap
 - [x] Generate base project
 - [x] OpenApi Fastify middleware generator
-- [ ] Import from another template
+- [x] Import from another template
+- [ ] Safety with isolated-vm
+- [ ] Type checking ?
 - [ ] OpenApi Elysia middleware generator
 - [ ] OpenApi Prisma generator for CRUD like apps (feasible ?)
 - [ ] Better EJS syntax (hate it, made for HTML)
