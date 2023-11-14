@@ -27,6 +27,16 @@ To use it you need to
 - `npm link`
 - Command should now be available as `temple`
 
+## Creating a template
+
+Templates are a directory with the following files / folders:
+
+- config.json => contains the shema of the inputs, eventually some imports. May contain the prompting instruction but as of now, it is unstable.
+- Template directory => contains all the templated files with the expected structure. File names can be templated as well with between "$$" notation. Syntax is in the `src/filename-grammar.ohm`file and is mostly javascript like.
+- Components directory => contains partials
+
+As of now, the format of templated files is `ejs` but it may change in the future.
+
 ## Ideal worklow
 
 Right now, what we mostly see is either:
